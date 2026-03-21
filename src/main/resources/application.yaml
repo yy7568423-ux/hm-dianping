@@ -1,0 +1,30 @@
+server:
+  port: 8081  # 项目启动端口
+spring:
+  application:
+    name: hmdp  # 应用名称
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver  # 8.x版本正确驱动类名
+    url: jdbc:mysql://127.0.0.1:8306/hmdp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root  # 数据库用户名
+    password: 123456  # 数据库密码（建议根据实际修改）
+  redis:
+    host: 127.0.0.1  # Redis地址
+    port: 6379  # Redis端口
+    password: 123456  # Redis密码（无密码则注释此行）
+    database: 0  # Redis默认库（0-15）
+    lettuce:
+      pool:
+        max-active: 10  # 连接池最大连接数
+        max-idle: 10    # 连接池最大空闲连接数
+        min-idle: 1     # 连接池最小空闲连接数
+        time-between-eviction-runs: 10000  # 空闲连接检测周期（毫秒，推荐数字写法）
+  jackson:
+    default-property-inclusion: non_null  # JSON序列化忽略null字段
+mybatis-plus:
+  type-aliases-package: com.hmdp.entity  # 实体类别名扫描包
+  configuration:
+    map-underscore-to-camel-case: true  # 补充：下划线转驼峰（MyBatis-Plus常用配置）
+logging:
+  level:
+    com.hmdp: debug  # 自定义包下日志级别为debug
