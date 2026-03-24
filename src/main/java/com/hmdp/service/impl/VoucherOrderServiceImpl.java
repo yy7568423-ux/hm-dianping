@@ -10,6 +10,7 @@ import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     private RedisIdWorker redisIdWorker;
 
     @Override
-    @Transactional //两张表的操作，加上事务，出现问题回滚
     public Result seckillVoucher(Long voucherId) {
         // 秒杀券实现
         // 1.查询优惠券ID
@@ -51,9 +51,18 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             //库存不足，返回异常
             return Result.fail("库存不足");
         }
-
-        //实现一人一单
         Long id = UserHolder.getUser().getId();
+        synchronized(id.toString().intern()) {
+            //获取代理对象（事务）
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.createVoucherOrder(voucherId);
+        }
+    }
+    @Transactional
+    @Override//两张表的操作，加上事务，出现问题回滚
+        public Result createVoucherOrder(Long voucherId){
+        Long id = UserHolder.getUser().getId();
+        //实现一人一单
         int count = lambdaQuery().eq(VoucherOrder::getUserId, id).eq(VoucherOrder::getVoucherId, voucherId).count();
         if (count > 0) {
             return Result.fail("用户已购买过该优惠券");
@@ -74,4 +83,5 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         //6.返回订单ID
         return Result.ok(order);
     }
+
 }
