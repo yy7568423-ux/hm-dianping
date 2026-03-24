@@ -51,14 +51,21 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             //库存不足，返回异常
             return Result.fail("库存不足");
         }
-        //4.扣减库存
+
+        //实现一人一单
+        Long id = UserHolder.getUser().getId();
+        int count = lambdaQuery().eq(VoucherOrder::getUserId, id).eq(VoucherOrder::getVoucherId, voucherId).count();
+        if (count > 0) {
+            return Result.fail("用户已购买过该优惠券");
+        }
+        VoucherOrder voucherOrder = new VoucherOrder();
+
+//4.扣减库存
         boolean success = seckillVoucherService.update()
                 .setSql("stock = stock - 1")
                 .eq("voucher_id", voucherId).gt("stock", 0)
                 .update();
-        //5.创建订单
-        VoucherOrder voucherOrder = new VoucherOrder();
-        Long id = UserHolder.getUser().getId();
+        //创建订单
         voucherOrder.setUserId(id);
         voucherOrder.setVoucherId(voucherId);
         long order = redisIdWorker.nextId("order");
