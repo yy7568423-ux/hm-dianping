@@ -6,10 +6,12 @@ import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.Blog;
 import com.hmdp.entity.User;
+import com.hmdp.mapper.BlogMapper;
 import com.hmdp.service.IBlogService;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.SystemConstants;
 import com.hmdp.utils.UserHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -31,6 +33,8 @@ public class BlogController {
     private IBlogService blogService;
     @Resource
     private IUserService userService;
+    @Autowired
+    private BlogMapper blogMapper;
 
     @PostMapping
     public Result saveBlog(@RequestBody Blog blog) {
@@ -46,9 +50,11 @@ public class BlogController {
     @PutMapping("/like/{id}")
     public Result likeBlog(@PathVariable("id") Long id) {
         // 修改点赞数量
-        blogService.update()
-                .setSql("liked = liked + 1").eq("id", id).update();
-        return Result.ok();
+//        blogService.update()
+//                .setSql("liked = liked + 1").eq("id", id).update();
+//        return Result.ok();
+
+        return blogService.likeBlog(id);
     }
 
     @GetMapping("/of/me")
