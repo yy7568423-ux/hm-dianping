@@ -79,23 +79,34 @@ class HmDianPingApplicationTests {
             //3.2.获取同类型的店铺集合
             List<Shop> value = entry.getValue();
             List<RedisGeoCommands.GeoLocation<String>> locations = new ArrayList<>(value.size());
-
             //3.3.写入Redis GEOADD key 经度 纬度 member
             for (Shop shop : value) {
                 locations.add(new RedisGeoCommands.GeoLocation<>(
                         shop.getId().toString(),
                         new Point(shop.getX(), shop.getY())
                 ));
-
             }
-
             stringRedisTemplate.opsForGeo().add(key, locations);
-
-
-
             }
-
         }
+
+
+    @Test
+    void testHyperLogLog() {
+        String[] values = new String[1000];
+        int j = 0;
+        for (int i = 0; i < 1000000; i++) {
+            j = i % 1000;
+            values[j] = "user_" + i;
+            if (j == 999) {
+                // 发送到Redis
+                stringRedisTemplate.opsForHyperLogLog().add("hl2", values);
+            }
+        }
+        // 统计数量
+        Long count = stringRedisTemplate.opsForHyperLogLog().size("hl2");
+        System.out.println("count = " + count);
+    }
     }
 
 
